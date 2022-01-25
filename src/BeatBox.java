@@ -13,6 +13,8 @@ public class BeatBox {
     Track track;
     Sequencer sequencer;
     Sequence sequence;
+    Label tempLabel;
+    int temp = 120;
 
     String[] instrumentName = {"Bass Drum", "Closed Hi-Hat", "Open Hi-Hat",
             "Acoustic Share", "Crash Cymbal", "Hand Clap",
@@ -34,6 +36,10 @@ public class BeatBox {
         checkBoxList = new ArrayList<JCheckBox>();
         Box buttonBox = new Box(BoxLayout.Y_AXIS);
 
+        tempLabel = new Label();
+        tempLabel.setText(String.valueOf(temp));
+        buttonBox.add(tempLabel);
+
         JButton start = new JButton("Start");
         start.addActionListener(new MyStartListener());
         buttonBox.add(start);
@@ -46,9 +52,13 @@ public class BeatBox {
         upTempo.addActionListener(new MyUpTempoListener());
         buttonBox.add(upTempo);
 
-        JButton downTempo = new JButton("Tempo dowm");
+        JButton downTempo = new JButton("Tempo down");
         downTempo.addActionListener(new MyDownTempoListener());
         buttonBox.add(downTempo);
+
+        JButton reset = new JButton("Reset");
+        reset.addActionListener(new ResetListener());
+        buttonBox.add(reset);
 
         Box nameBox = new Box(BoxLayout.Y_AXIS);
         for (int i = 0; i < 16; i++) {
@@ -86,7 +96,7 @@ public class BeatBox {
             sequencer.open();
             sequence = new Sequence(Sequence.PPQ, 4);
             track = sequence.createTrack();
-            sequencer.setTempoInBPM(120);
+            sequencer.setTempoInBPM(temp);
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -122,7 +132,7 @@ public class BeatBox {
             sequencer.setSequence(sequence);
             sequencer.setLoopCount(sequencer.LOOP_CONTINUOUSLY);
             sequencer.start();
-            sequencer.setTempoInBPM(120);
+            sequencer.setTempoInBPM(temp);
         } catch (Exception ex){
             ex.printStackTrace();
         }
@@ -135,13 +145,17 @@ public class BeatBox {
     public class MyUpTempoListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             float tempoFactor = sequencer.getTempoFactor();
-            sequencer.setTempoInBPM((float) (tempoFactor * 1.03));
+            sequencer.setTempoFactor((float) (tempoFactor * 1.03));
+            temp = (int) (temp * 1.03);
+            tempLabel.setText(String.valueOf(temp));
         }
     }
     public class MyDownTempoListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             float tempoFactor = sequencer.getTempoFactor();
-            sequencer.setTempoInBPM((float) (tempoFactor * .97));
+            sequencer.setTempoFactor((float) (tempoFactor * .97));
+            temp = (int) (temp * .97);
+            tempLabel.setText(String.valueOf(temp));
         }
     }
     public class MyStopListener implements ActionListener {
@@ -149,6 +163,16 @@ public class BeatBox {
             sequencer.stop();
         }
     }
+    public class ResetListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            checkBoxList.forEach((s) -> s.setSelected(false));
+            sequencer.stop();
+            sequence.deleteTrack(track);
+//            float tempoFactor = sequencer.getTempoFactor();
+//            sequencer.setTempoInBPM((float) (tempoFactor * 1));
+        }
+    }
+
     public void makeTracks(int[] list) {
 
         for (int i = 0; i < 16; i++) {
